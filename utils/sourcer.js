@@ -72,4 +72,16 @@ const get_9gag = async () =>{
 const get_photo_url = async () =>{
 
 }
-module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag}
+
+//Buzz Feed main feed
+const get_buzz= async () =>{
+    const feed = get_feed("https://www.buzzfeed.com/ca/index.xml",
+    'buzz.json')
+}
+// May need to use this to grab news photos if the rss
+/*
+const get_photo_url = async () =>{
+
+}
+*/
+module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag,get_buzz}

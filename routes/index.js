@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 
-var {top_goo_feed, BBC, get_prlog_feed, get_9gag} = require('../utils/sourcer')
+var {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_buzz} = require('../utils/sourcer')
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -24,5 +24,11 @@ get_prlog_feed()
 router.get('/nine', function(req,res,next){
   get_9gag()
     res.render('index', {title: 'Prlog'})
+  })
+
+  router.get('/buzz', function(req,res,next){
+    get_buzz()
+    res.render('index', {title: 'buzz'})
+    
   })
 module.exports = router;

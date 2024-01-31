@@ -7,8 +7,12 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
 
+//Routes
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+
+//Models
+const Media = require('./models/Media')
 
 
 //Load config file
@@ -18,6 +22,7 @@ var mongoose = require('mongoose')
 var MongoStore = require('connect-mongo')
 var connectDB = require('./config/db')
 connectDB()
+
 
 var app = express();
 
