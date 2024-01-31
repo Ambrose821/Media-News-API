@@ -13,7 +13,11 @@ const MediaSchema = new mongoose.Schema({
             type:String,
             required: true
         },
-        media_link:{
+        img_url:{
+            type: String,
+            required: false
+        },
+        video_url:{
             type: String,
             required: false
         },

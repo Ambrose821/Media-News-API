@@ -1,7 +1,15 @@
 var express = require('express');
 var router = express.Router();
+var axios = require('axios')
+var {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_buzz, get_news_io} = require('../utils/sourcer')
 
-var {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_buzz} = require('../utils/sourcer')
+
+
+//News IO API without client. 2000 Articles per day
+router.get('/newsio', async (req,res,next)=>{
+  get_news_io();
+  res.render('index',{title: 'NewsIO Collected'})
+})
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
