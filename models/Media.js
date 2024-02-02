@@ -7,7 +7,7 @@ const MediaSchema = new mongoose.Schema({
         },
         snippet:{
             type: String,
-            required: true
+            required: false
         },
         URL:{
             type:String,
@@ -29,6 +29,7 @@ const MediaSchema = new mongoose.Schema({
         },
         source:{
            type: String,
+           default:"Source below",
            required: true
         },
         date:{

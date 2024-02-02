@@ -12,7 +12,7 @@ router.get('/newsio', async (req,res,next)=>{
 })
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/goo', function(req, res, next) {
 
   top_goo_feed()
   res.render('index', { title: 'Express' });
@@ -31,7 +31,7 @@ get_prlog_feed()
 
 router.get('/nine', function(req,res,next){
   get_9gag()
-    res.render('index', {title: 'Prlog'})
+    res.render('index', {title: 'nine'})
   })
 
   router.get('/buzz', function(req,res,next){
