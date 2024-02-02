@@ -26,6 +26,13 @@ connectDB()
 
 var app = express();
 
+var {source} = require('./utils/sourcer')
+//Source when server starts
+source();
+//Source again 24Hours later
+setInterval(source,1000*60*60*24);
+
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

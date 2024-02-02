@@ -28,7 +28,8 @@ const { stringify } = require("querystring");
 const RssParser = require('rss-parser')
 const axios = require('axios')
 const parser = new RssParser();
-const Media = require('../models/Media')
+const Media = require('../models/Media');
+//const { get } = require('../app');
 
 function parseMediaLinks(htmlString) {
     const videoPattern = /<video.*poster="([^"]+)".*><source src="([^"]+)" type="video\/mp4"><\/video>/;
@@ -57,8 +58,8 @@ function parseMediaLinks(htmlString) {
 const get_news_io = async (req,res,next) =>{
     try{
     const response = await axios.get(`https://newsdata.io/api/1/news?apikey=${process.env.NEWS_IO_API_Key}&q=pizza&language=en&category=politics`)
-    console.log(response.data.results)
-    console.log(response.data.results.length);
+    //console.log(response.data.results)
+    //console.log(response.data.results.length);
     const articles = response.data.results;
     for(let i =0; i < articles.length; i++ ){
         source_string = articles[i].source
@@ -78,7 +79,7 @@ const get_news_io = async (req,res,next) =>{
         if(err) throw err;
         console.log("Feed written to file " + "news_io.json")
     })*/}catch(err){
-        console.log("NewsI0:" +err)
+       // console.log("NewsI0:" +err)
     }
     
 }
@@ -90,7 +91,7 @@ const nine_parse_db = async(feed)=>{
         console.log(content.length)
         
         for(var i=0; i< content.length; i++){
-            console.log("Iteration: " +i)
+           // console.log("Iteration: " +i)
             let stuff = content[i];
             let media_arr = parseMediaLinks(stuff.content);
             if(media_arr.length>1){
@@ -118,6 +119,7 @@ const nine_parse_db = async(feed)=>{
             await media.save();
             continue;
         }
+        return
 
     }catch(err){
         console.log("9parse error " + err)
@@ -192,4 +194,18 @@ const parse_NewsIo = async (feed)=>{
     console.log("onesec")
 
 }
-module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag,get_buzz, get_news_io}
+const source = async()=>{
+    try{
+        const today = new Date()
+    get_news_io();
+    get_9gag(); 
+    console.log("Sourced at " + today.toDateString())
+    }catch(err){
+        console.log("Not Sourcing: " +err)
+
+    }
+
+}
+
+
+module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag,get_buzz, get_news_io,source}
