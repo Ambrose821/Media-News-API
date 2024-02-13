@@ -57,7 +57,7 @@ function parseMediaLinks(htmlString) {
 //NewsIO endpoint use
 const get_news_io = async (req,res,next) =>{
     try{
-    const response = await axios.get(`https://newsdata.io/api/1/news?apikey=${process.env.NEWS_IO_API_Key}&q=pizza&language=en&category=politics`)
+    const response = await axios.get(`https://newsdata.io/api/1/news?apikey=${process.env.NEWS_IO_API_Key}&language=en&category=politics`)
     //console.log(response.data.results)
     //console.log(response.data.results.length);
     const articles = response.data.results;
@@ -131,37 +131,59 @@ const get_feed = async(urlString,filename = "default.json") =>{
     try{
         const feed = await parser.parseURL(urlString)
        
-        feedString = JSON.stringify(feed,null,2)
+       /* feedString = JSON.stringify(feed,null,2)
         fs.appendFile(filename,feedString, function(err){
             if(err) throw err;
-            console.log("Feed written to file " + filename)
+         //   console.log("Feed written to file " + filename)
         })
         return feed.items
         console.log(feed.title)
   
         console.log(feed.items[0].title)
   
-        console.log(feed.items.length)
-
+        console.log(feed.items.length)*/
+        return feed.items;
     }catch(err){
         console.log("Error at Base get_feed: " + err)
     }
 }
 
+const news_rss_dbParse = async(feed) => {
+    const content = feed;
+    for(var i=0; i< content.length; i++){
+        // console.log("Iteration: " +i)
+         let stuff = content[i];
+       
+
+         const media = new Media({
+             title: stuff.title,
+             URL: stuff.link,
+             snippet:stuff.contentSnippet,
+             date: stuff.isoDate,
+             source: stuff.link,
+             genre: "news"
+
+         })
+         await media.save();
+         continue;
+     }
+     return
+    
+}
 const top_goo_feed = () =>{
     const feed = get_feed('https://news.google.com/rss', 'top_goo_feed.json')
+    news_rss_dbParse(feed)
     
-    return feed;
   
 }
 const BBC = async() =>{
     const feed = get_feed('https://feeds.bbci.co.uk/news/rss.xml?edition=us', 'top_BBC.json')
-    return feed;
+    news_rss_dbParse(feed)
 }
 
 const get_prlog_feed = async () =>{
     const feed = get_feed("https://www.prlog.org/news/rss.xml", 'prlog.json') 
-    return feed;
+    news_rss_dbParse(feed)
 }
 
 
@@ -198,10 +220,13 @@ const source = async()=>{
     try{
         const today = new Date()
     get_news_io();
+    top_goo_feed();
+    BBC();
+    get_prlog_feed();
     get_9gag(); 
     console.log("Sourced at " + today.toDateString())
     }catch(err){
-        console.log("Not Sourcing: " +err)
+        console.log("Not Sourcing properly due to: " +err)
 
     }
 

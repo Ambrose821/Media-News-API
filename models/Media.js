@@ -35,7 +35,8 @@ const MediaSchema = new mongoose.Schema({
         date:{
             type:Date,
             default: Date.now
-        }
+        },
+        
         
 })
 
