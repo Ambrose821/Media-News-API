@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const MediaSchema = new mongoose.Schema({
         title: {
             type: String,
-            required: true
+            required: true,
+            unique : true
         },
         snippet:{
             type: String,
@@ -15,11 +16,11 @@ const MediaSchema = new mongoose.Schema({
         },
         img_url:{
             type: String,
-            required: false
+            default:null
         },
         video_url:{
             type: String,
-            required: false
+            default: null
         },
         genre: {
             type: String,
@@ -36,6 +37,10 @@ const MediaSchema = new mongoose.Schema({
             type:Date,
             default: Date.now
         },
+        sourced_at:{
+            type:Date,
+            default: Date.now
+        }
         
         
 })

@@ -9,7 +9,7 @@ const Media = require('../models/Media');
 
 //News IO API without client. 2000 Articles per day
 router.get('/content_get', async (req,res,next)=>{
-  const {genre ="",quantity} = req.query
+  var {genre ="",quantity} = req.query
   if(!quantity){
     console.log('none default = 10')
     quantity=10;
@@ -23,7 +23,8 @@ router.get('/content_get', async (req,res,next)=>{
      media = await Media.find({genre: genre}).sort({date: -1}).limit(quantity).lean().exec()
   }
   console.log(media)
-  res.send({media:media})
+  res.status(200).json({media:media})
+  
 
   /*
   How to access this endpoint in JAVASCRIPT

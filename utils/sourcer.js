@@ -29,6 +29,7 @@ const RssParser = require('rss-parser')
 const axios = require('axios')
 const parser = new RssParser();
 const Media = require('../models/Media');
+const { resolve } = require('path');
 //const { get } = require('../app');
 
 function parseMediaLinks(htmlString) {
@@ -56,6 +57,9 @@ function parseMediaLinks(htmlString) {
 
 //NewsIO endpoint use
 const get_news_io = async (req,res,next) =>{
+
+
+    return new Promise(async (resolve,reject) =>{ 
     try{
     const response = await axios.get(`https://newsdata.io/api/1/news?apikey=${process.env.NEWS_IO_API_Key}&language=en&category=politics`)
     //console.log(response.data.results)
@@ -74,16 +78,24 @@ const get_news_io = async (req,res,next) =>{
         })
         await article.save()
     }
+        resolve();
    /* feedString = JSON.stringify(response.data,null,2)
     fs.appendFile('news_io.json',feedString, function(err){
         if(err) throw err;
         console.log("Feed written to file " + "news_io.json")
     })*/}catch(err){
-       // console.log("NewsI0:" +err)
+        
+       console.log("NewsI0:" +err)
+       reject(err);
     }
+});
     
 }
-
+const news_io_helper = async()=>{
+    return new Promise((resolve,reject)=>{
+        get_news_io().then(resolve).catch(reject);
+    })
+}
 //9gag db parse to db
 const nine_parse_db = async(feed)=>{
     try {
@@ -171,27 +183,30 @@ const news_rss_dbParse = async(feed) => {
     
 }
 const top_goo_feed = () =>{
-    const feed = get_feed('https://news.google.com/rss', 'top_goo_feed.json')
-    news_rss_dbParse(feed)
-    
+    return new Promise((resolve,reject) => {
+    get_feed('https://news.google.com/rss', 'top_goo_feed.json').then(feed => news_rss_dbParse(feed)).then(resolve).catch(reject)
+    });
   
 }
 const BBC = async() =>{
-    const feed = get_feed('https://feeds.bbci.co.uk/news/rss.xml?edition=us', 'top_BBC.json')
-    news_rss_dbParse(feed)
+    return new Promise((resolve,reject) => {
+        get_feed('https://feeds.bbci.co.uk/news/rss.xml?edition=us', 'top_BBC.json').then(feed => news_rss_dbParse(feed)).then(resolve).catch(reject)
+        });
 }
 
 const get_prlog_feed = async () =>{
-    const feed = get_feed("https://www.prlog.org/news/rss.xml", 'prlog.json') 
-    news_rss_dbParse(feed)
+    return new Promise((resolve,reject) => {
+    get_feed("https://www.prlog.org/news/rss.xml", 'prlog.json').then(feed => news_rss_dbParse(feed)).then(resolve).catch(reject) 
+    })
 }
 
 
 const get_9gag = async () =>{
-    const feed = await get_feed("https://9gagrss.com/feed/",
-    '9gag.json')
+    return new Promise((resolve, reject) =>{
+    get_feed("https://9gagrss.com/feed/",
+    '9gag.json').then(feed => nine_parse_db(feed)).then(resolve).catch(reject)})
     
-    nine_parse_db(feed);
+    
 }
 // May need to use this to grab news photos if the rss
 const get_photo_url = async () =>{
@@ -199,11 +214,14 @@ const get_photo_url = async () =>{
 }
 
 //Buzz Feed main feed
+/* Pretty trash feed
 const get_buzz= async () =>{
+    return new Promise((resolve,reject)=>{
     const feed = get_feed("https://www.buzzfeed.com/ca/index.xml",
-    'buzz.json')
+    'buzz.json')})
     
-}
+}*/
+
 // May need to use this to grab news photos if the rss
 /*
 const get_photo_url = async () =>{
@@ -217,14 +235,17 @@ const parse_NewsIo = async (feed)=>{
 
 }
 const source = async()=>{
+    
     try{
-        const today = new Date()
-    get_news_io();
-    top_goo_feed();
-    BBC();
-    get_prlog_feed();
-    get_9gag(); 
-    console.log("Sourced at " + today.toDateString())
+        
+        const today = new Date();
+        await Promise.all([
+        news_io_helper(),
+        top_goo_feed(),
+        BBC(),
+        get_prlog_feed(),
+        get_9gag()])
+        console.log("Sourced at " + today.toDateString())
     }catch(err){
         console.log("Not Sourcing properly due to: " +err)
 
@@ -233,4 +254,4 @@ const source = async()=>{
 }
 
 
-module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag,get_buzz, get_news_io,source}
+module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_news_io,source}
