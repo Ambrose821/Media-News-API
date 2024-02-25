@@ -17,6 +17,7 @@ router.get('/content_get', async (req,res,next)=>{
   var  media;
   if (!genre){
     media = await Media.find({}).sort({date: -1}).limit(quantity).lean().exec()
+    console.log("no genre")
     
   }
   else{
@@ -24,7 +25,7 @@ router.get('/content_get', async (req,res,next)=>{
   }
   console.log(media)
   res.status(200).json({media:media})
-  
+
 
   /*
   How to access this endpoint in JAVASCRIPT
@@ -76,6 +77,5 @@ else:
   
 })
 
-router.get('/content_get/')
 module.exports = router;
 
