@@ -55,6 +55,28 @@ function parseMediaLinks(htmlString) {
     return [];
 }
 
+
+
+const reddit_funny_videos = async (req,res,next) =>{
+ 
+
+
+    try {
+        const response = await axios.get('https://www.reddit.com/r/funnyvideos/.json');
+        const posts = response.data.data.children;
+
+        const videos = posts.map(post => {
+            const { title, url, media } = post.data;
+            // Depending on the structure you might need to adjust how to extract video URL
+            return { title, url, videoUrl: media?.reddit_video?.fallback_url };
+        });
+
+        console.log(videos.length);
+        return videos;
+    } catch (err) {
+        console.error("Error fetching video posts: ", err);
+    }
+}
 //NewsIO endpoint use
 const get_news_io = async (req,res,next) =>{
 
@@ -66,6 +88,7 @@ const get_news_io = async (req,res,next) =>{
     //console.log(response.data.results.length);
     const articles = response.data.results;
     for(let i =0; i < articles.length; i++ ){
+        try{
         source_string = articles[i].source
         let article = new Media({
             title: articles[i].title,
@@ -77,6 +100,15 @@ const get_news_io = async (req,res,next) =>{
             source: articles[i].source_url + articles[i].creator
         })
         await article.save()
+        }catch(err){
+            if(err.code == 11000){
+                console.log("Skipping News IO Duplicate")
+                continue;
+            }else{
+                console.log("news io loop err: " +err )
+            }
+            
+        }
     }
         resolve();
    /* feedString = JSON.stringify(response.data,null,2)
@@ -103,8 +135,10 @@ const nine_parse_db = async(feed)=>{
         console.log(content.length)
         
         for(var i=0; i< content.length; i++){
+
+            try{
            // console.log("Iteration: " +i)
-            let stuff = content[i];
+            var stuff = content[i];
             let media_arr = parseMediaLinks(stuff.content);
             if(media_arr.length>1){
                var video = media_arr[1];
@@ -130,6 +164,16 @@ const nine_parse_db = async(feed)=>{
             })
             await media.save();
             continue;
+            }catch(err){
+                if(err.code == 11000){
+                    console.log("Skipping 9gag Duplicate: "+ stuff.title)
+                    continue;
+                }else{
+                    console.log("9 loop err: " +err )
+                    
+                }
+                
+            }
         }
         return
 
@@ -163,8 +207,9 @@ const get_feed = async(urlString,filename = "default.json") =>{
 const news_rss_dbParse = async(feed) => {
     const content = feed;
     for(var i=0; i< content.length; i++){
+        try{
         // console.log("Iteration: " +i)
-         let stuff = content[i];
+         var stuff = content[i];
        
 
          const media = new Media({
@@ -178,6 +223,15 @@ const news_rss_dbParse = async(feed) => {
          })
          await media.save();
          continue;
+        }catch(err){
+            if(err.code == 11000){
+                console.log("Skipping regular news Duplicate"+ stuff.title)
+                continue;
+            }else{
+                console.log("news io loop err: " +err )
+            }
+            
+        }
      }
      return
     
@@ -236,22 +290,19 @@ const parse_NewsIo = async (feed)=>{
 }
 const source = async()=>{
     
-    try{
+    
         
         const today = new Date();
-        await Promise.all([
+        await Promise.allSettled([
         news_io_helper(),
         top_goo_feed(),
         BBC(),
         get_prlog_feed(),
         get_9gag()])
         console.log("Sourced at " + today.toDateString())
-    }catch(err){
-        console.log("Not Sourcing properly due to: " +err)
-
-    }
+   
 
 }
 
 
-module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_news_io,source}
+module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_news_io,source,reddit_funny_videos }
