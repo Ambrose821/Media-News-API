@@ -57,28 +57,77 @@ function parseMediaLinks(htmlString) {
 
 
 
-const reddit_funny_videos = async (req,res,next) =>{
+const reddit_funny_videos = async (redditJsonUrl) =>{
  
 
-
+//'https://www.reddit.com/r/funnyvideos/.json'
     try {
-        const response = await axios.get('https://www.reddit.com/r/funnyvideos/.json');
+        const response = await axios.get(redditJsonUrl);
         const posts = response.data.data.children;
+       
 
         const videos = posts.map(post => {
-            const { title, url, media } = post.data;
+            const { title, url, media/*, thumbnail*/ } = post.data;
             // Depending on the structure you might need to adjust how to extract video URL
-            return { title, url, videoUrl: media?.reddit_video?.fallback_url };
+         
+         
+            //thumbnails are cuasing so many problems. not worth it/
+            return { title, url, videoUrl: media?.reddit_video?.fallback_url/*,thumbnailUrl*/ };
         });
-
-        console.log(videos.length);
+        
+   //    console.log(videos);
         return videos;
     } catch (err) {
-        console.error("Error fetching video posts: ", err);
+        console.error("Error fetching REDDIT video posts: ", err);
     }
 }
+
+const parse_reddit_videos = async (redditJson) =>{
+  //  console.log("+++++++++++++Reddit Parse+++++++++++++++: \n" +JSON.stringify(redditJson))
+
+    console.log(redditJson.length+ "Here")
+    console.log(redditJson.length+ "Here")
+    
+        for(let i =0; i< redditJson.length; i++){
+            try{
+            
+                console.log("Hereloop")
+            const newMedia = new Media({
+
+                title: redditJson[i].title,
+                URL: redditJson[i].url,
+                snippet: redditJson[i].title,
+                video_url: redditJson[i].videoUrl,
+                genre:'memes',
+                source: redditJson[i].url
+            })
+            await newMedia.save()
+            console.log("8888888888888888888888888888888New Media: 888888888888888888\n" + newMedia)
+        }catch(err){
+            if(err.code == 11000){
+                console.log("Skipping Reddit Duplicate:" + redditJson[i].title)
+            }
+            else{
+                console.log("Reddit Parsing Error(Not Duplicate Error:+ " + err)
+            }
+        }   
+        }
+
+        
+  
+}
+//
+const get_reddit_videos = async (redditJsonUrl) =>{
+
+    return new Promise(async (resolve, reject)=>{
+        const redditVideoJson = await reddit_funny_videos(redditJsonUrl)
+       parse_reddit_videos(redditVideoJson).then(resolve).catch(reject)
+    })
+
+}
+
 //NewsIO endpoint use
-const get_news_io = async (req,res,next) =>{
+const get_news_io = async () =>{
 
 
     return new Promise(async (resolve,reject) =>{ 
@@ -294,6 +343,7 @@ const source = async()=>{
         
         const today = new Date();
         await Promise.allSettled([
+         get_reddit_videos('https://www.reddit.com/r/funnyvideos/.json'),
         news_io_helper(),
         top_goo_feed(),
         BBC(),
@@ -305,4 +355,4 @@ const source = async()=>{
 }
 
 
-module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_news_io,source,reddit_funny_videos }
+module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_news_io,source,reddit_funny_videos,get_reddit_videos }

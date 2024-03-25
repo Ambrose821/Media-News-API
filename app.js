@@ -26,13 +26,14 @@ connectDB()
 
 var app = express();
 
-var {source, reddit_funny_videos } = require('./utils/sourcer')
+var {source, reddit_funny_videos,get_reddit_videos } = require('./utils/sourcer')
 //Source when server starts
 source();
 //Source again 24Hours later
 setInterval(source,1000*60*60*24);
 
-reddit_funny_videos()
+
+
 
 
 // view engine setup
