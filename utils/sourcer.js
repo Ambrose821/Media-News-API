@@ -62,7 +62,11 @@ const reddit_funny_videos = async (redditJsonUrl) =>{
 
 //'https://www.reddit.com/r/funnyvideos/.json'
     try {
-        const response = await axios.get(redditJsonUrl);
+        const response = await axios.get(redditJsonUrl,{
+            headers: {
+                'User-Agent': 'MyRedditApp/1.0 (https://media-news-api-production.up.railway.app)'
+            }
+        })
         const posts = response.data.data.children;
        
 
