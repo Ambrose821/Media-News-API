@@ -1,1 +1,23 @@
+name: Build & Deploy
+on:
+  push:
+    branches:[main]
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      -name: Deploy Media-News-API
+      uses: appleboy/ssh-actions@v0.1.2
+      with:
+        host: ${{secrets.SSH_HOST}}
+        key: ${{secrets.SSH_KEY}}
+        username: ${{secrets.SSH_USERNAME}}
+
+        scripts: |
+        mkdir test
+        cd test
+        git clone https://github.com/Ambrose821/Media-News-API
+        echo 'Deployment success'
 
