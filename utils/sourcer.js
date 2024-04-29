@@ -172,11 +172,12 @@ const get_news_io = async (genre="politics",querystring="") =>{
         }
     }
         resolve();
-    feedString = JSON.stringify(response.data,null,2)
-    fs.appendFile('news_io_2.json',feedString, function(err){
-        if(err) throw err;
-        console.log("Feed written to file " + "news_io.json")
-    })}catch(err){
+    // feedString = JSON.stringify(response.data,null,2)
+    // fs.appendFile('news_io_2.json',feedString, function(err){
+    //     if(err) throw err;
+    //     console.log("Feed written to file " + "news_io.json")
+    // })
+    }catch(err){
         
        console.log("NewsI0:" +err)
        reject(err);
@@ -247,18 +248,19 @@ const nine_parse_db = async(feed)=>{
 
 const get_espn_news = async (urlString, filename = "default.JSON") =>{
     try{    
-        const feed = await parser.parseURL(urlString)
-        feedString = JSON.stringify(feed,null,2)
+        
+
+
+        return new Promise((resolve,reject) => {
+            get_feed('https://www.espn.com/espn/rss/news', 'ESPN.json').then(feed => parse_espn_db(feed)).then(resolve).catch(reject)
+            });
+       /* feedString = JSON.stringify(feed,null,2)
         fs.appendFile(filename,feedString, function(err){
             if(err) throw err;
            console.log("Feed written to file " + filename)
-        })
+        })*/
        // return feed.items
-        console.log(feed.title)
-  
-        console.log(feed.items[0].title)
-  
-        console.log(feed.items.length)
+       
         return feed.items;
 
     }catch(err){
@@ -273,11 +275,11 @@ const get_feed = async(urlString,filename = "default.json") =>{
     try{
         const feed = await parser.parseURL(urlString)
        
-       feedString = JSON.stringify(feed,null,2)
+      /* feedString = JSON.stringify(feed,null,2)
         fs.appendFile(filename,feedString, function(err){
             if(err) throw err;
          //   console.log("Feed written to file " + filename)
-        })
+        })*/
         return feed.items
        /* console.log(feed.title)
   
@@ -312,14 +314,14 @@ const parse_espn_db = async (feed)=>{
          continue;
         }catch(err){
             if(err.code == 11000){
-                console.log("Skipping regular espn Duplicate"+ stuff.title)
+                console.log("Skipping ESPN Duplicate"+ stuff.title)
                 continue;
             }else{
-                console.log("news io loop err: " +err )
+                console.log("espn loop err: " +err )
             }
             
         }
-     }
+     }console.log('ESPN FINISHED')
      return
 
     
@@ -349,7 +351,7 @@ const news_rss_dbParse = async(feed) => {
                 console.log("Skipping regular news Duplicate"+ stuff.title)
                 continue;
             }else{
-                console.log("news io loop err: " +err )
+                console.log("News REGULAR loop err: " +err )
             }
             
         }
@@ -416,14 +418,15 @@ const source = async()=>{
         const today = new Date();
         await Promise.allSettled([
         // get_reddit_videos('https://www.reddit.com/r/funnyvideos/.json'),
-        news_io_helper(),
-        news_io_helper("sports","NHL"),
-        news_io_helper("sports","NBA"),
-        news_io_helper("sports","PGA"),
-        news_io_helper("sports","UFC"),
-        news_io_helper("sports","BOXING"),
-        news_io_helper("sports","WBC"),
-        news_io_helper("sports","PFL"),
+        
+        // news_io_helper(),
+        // news_io_helper("sports","NHL"),
+        // news_io_helper("sports","NBA"),
+        // news_io_helper("sports","PGA"),
+        // news_io_helper("sports","UFC"),
+        // news_io_helper("sports","BOXING"),
+        // news_io_helper("sports","WBC"),
+        // news_io_helper("sports","PFL"),
         top_goo_feed(),
         BBC(),
         get_prlog_feed(),
