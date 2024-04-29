@@ -163,7 +163,7 @@ const get_news_io = async (genre="politics",querystring="") =>{
         await article.save()
         }catch(err){
             if(err.code == 11000){
-                console.log("Skipping News IO Duplicate")
+                console.log("Skipping News IO Duplicate: "+ articles[i].title)
                 continue;
             }else{
                 console.log("news io loop err: " +err )
@@ -417,16 +417,16 @@ const source = async()=>{
         
         const today = new Date();
         await Promise.allSettled([
-        // get_reddit_videos('https://www.reddit.com/r/funnyvideos/.json'),
+       // get_reddit_videos('https://www.reddit.com/r/funnyvideos/.json'),
         
-        // news_io_helper(),
-        // news_io_helper("sports","NHL"),
-        // news_io_helper("sports","NBA"),
-        // news_io_helper("sports","PGA"),
-        // news_io_helper("sports","UFC"),
-        // news_io_helper("sports","BOXING"),
-        // news_io_helper("sports","WBC"),
-        // news_io_helper("sports","PFL"),
+        news_io_helper(),
+        news_io_helper("sports","NHL"),
+        news_io_helper("sports","NBA"),
+        news_io_helper("sports","PGA"),
+        news_io_helper("sports","UFC"),
+        news_io_helper("sports","BOXING"),
+        news_io_helper("sports","WBC"),
+        news_io_helper("sports","PFL"),
         top_goo_feed(),
         BBC(),
         get_prlog_feed(),
