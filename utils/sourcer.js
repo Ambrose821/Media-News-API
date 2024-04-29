@@ -130,13 +130,21 @@ const get_reddit_videos = async (redditJsonUrl) =>{
 
 }
 
-//NewsIO endpoint use
-const get_news_io = async () =>{
 
+
+//NewsIO endpoint use
+const get_news_io = async (genre="politics",querystring="") =>{
+    
 
     return new Promise(async (resolve,reject) =>{ 
     try{
-    const response = await axios.get(`https://newsdata.io/api/1/news?apikey=${process.env.NEWS_IO_API_Key}&language=en&category=politics`)
+        let genre_attribute = (genre == "sports") ? "sportsIO" : "news";
+        let response="";
+    if(querystring){
+    response = await axios.get(`https://newsdata.io/api/1/news?apikey=${process.env.NEWS_IO_API_Key}&language=en&category=${genre}&q=${querystring}`)}
+    else{
+     response = await axios.get(`https://newsdata.io/api/1/news?apikey=${process.env.NEWS_IO_API_Key}&language=en&category=${genre}`)
+    }
     //console.log(response.data.results)
     //console.log(response.data.results.length);
     const articles = response.data.results;
@@ -148,7 +156,7 @@ const get_news_io = async () =>{
             snippet: articles[i].description,
             URL: articles[i].link,
             img_url: articles[i].image_url,
-            genre: "news",
+            genre: genre_attribute,
             date: articles[i].pubDate,
             source: articles[i].source_url + articles[i].creator
         })
@@ -164,11 +172,11 @@ const get_news_io = async () =>{
         }
     }
         resolve();
-   /* feedString = JSON.stringify(response.data,null,2)
-    fs.appendFile('news_io.json',feedString, function(err){
+    feedString = JSON.stringify(response.data,null,2)
+    fs.appendFile('news_io_2.json',feedString, function(err){
         if(err) throw err;
         console.log("Feed written to file " + "news_io.json")
-    })*/}catch(err){
+    })}catch(err){
         
        console.log("NewsI0:" +err)
        reject(err);
@@ -176,9 +184,9 @@ const get_news_io = async () =>{
 });
     
 }
-const news_io_helper = async()=>{
+const news_io_helper = async(genre="politics",querystring="")=>{
     return new Promise((resolve,reject)=>{
-        get_news_io().then(resolve).catch(reject);
+        get_news_io(genre,querystring).then(resolve).catch(reject);
     })
 }
 //9gag db parse to db
@@ -235,26 +243,86 @@ const nine_parse_db = async(feed)=>{
     }
 
 }
+
+
+const get_espn_news = async (urlString, filename = "default.JSON") =>{
+    try{    
+        const feed = await parser.parseURL(urlString)
+        feedString = JSON.stringify(feed,null,2)
+        fs.appendFile(filename,feedString, function(err){
+            if(err) throw err;
+           console.log("Feed written to file " + filename)
+        })
+       // return feed.items
+        console.log(feed.title)
+  
+        console.log(feed.items[0].title)
+  
+        console.log(feed.items.length)
+        return feed.items;
+
+    }catch(err){
+        console.log(err)
+    }
+}
+
+
+
 //Base method for collecting feed from any given url. C
 const get_feed = async(urlString,filename = "default.json") =>{
     try{
         const feed = await parser.parseURL(urlString)
        
-       /* feedString = JSON.stringify(feed,null,2)
+       feedString = JSON.stringify(feed,null,2)
         fs.appendFile(filename,feedString, function(err){
             if(err) throw err;
          //   console.log("Feed written to file " + filename)
         })
         return feed.items
-        console.log(feed.title)
+       /* console.log(feed.title)
   
         console.log(feed.items[0].title)
   
-        console.log(feed.items.length)*/
-        return feed.items;
+        console.log(feed.items.length)
+        return feed.items;*/
     }catch(err){
         console.log("Error at Base get_feed: " + err)
     }
+}
+
+const parse_espn_db = async (feed)=>{
+    const content = feed;
+    for(var i=0; i< content.length; i++){
+        try{
+        // console.log("Iteration: " +i)
+         var stuff = content[i];
+       
+
+         const media = new Media({
+             title: stuff.title,
+             URL: stuff.link,
+             snippet:stuff.contentSnippet,
+             date: stuff.isoDate,
+             source: stuff.link,
+             genre: "sportsBigCompany",
+             img_url:stuff.enclosure.url
+
+         })
+         await media.save();
+         continue;
+        }catch(err){
+            if(err.code == 11000){
+                console.log("Skipping regular espn Duplicate"+ stuff.title)
+                continue;
+            }else{
+                console.log("news io loop err: " +err )
+            }
+            
+        }
+     }
+     return
+
+    
 }
 
 const news_rss_dbParse = async(feed) => {
@@ -347,8 +415,15 @@ const source = async()=>{
         
         const today = new Date();
         await Promise.allSettled([
-         get_reddit_videos('https://www.reddit.com/r/funnyvideos/.json'),
+        // get_reddit_videos('https://www.reddit.com/r/funnyvideos/.json'),
         news_io_helper(),
+        news_io_helper("sports","NHL"),
+        news_io_helper("sports","NBA"),
+        news_io_helper("sports","PGA"),
+        news_io_helper("sports","UFC"),
+        news_io_helper("sports","BOXING"),
+        news_io_helper("sports","WBC"),
+        news_io_helper("sports","PFL"),
         top_goo_feed(),
         BBC(),
         get_prlog_feed(),
@@ -359,4 +434,4 @@ const source = async()=>{
 }
 
 
-module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_news_io,source,reddit_funny_videos,get_reddit_videos }
+module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_news_io,source,reddit_funny_videos,get_reddit_videos,get_espn_news }

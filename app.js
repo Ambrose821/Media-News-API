@@ -26,7 +26,7 @@ connectDB()
 
 var app = express();
 
-var {source, reddit_funny_videos,get_reddit_videos } = require('./utils/sourcer')
+var {source, reddit_funny_videos,get_reddit_videos,get_espn_news } = require('./utils/sourcer')
 //Source when server starts
 source();
 //Source again 24Hours later
