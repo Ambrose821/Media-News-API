@@ -57,7 +57,7 @@ function parseMediaLinks(htmlString) {
 
 
 
-const reddit_funny_videos = async (redditJsonUrl) =>{
+const reddit_funny_videos = async (redditJsonUrl,genre="memes") =>{
  
 
 //'https://www.reddit.com/r/funnyvideos/.json'
@@ -75,8 +75,8 @@ const reddit_funny_videos = async (redditJsonUrl) =>{
             // Depending on the structure you might need to adjust how to extract video URL
          
          
-            //thumbnails are cuasing so many problems. not worth it/
-            return { title, url, videoUrl: media?.reddit_video?.fallback_url/*,thumbnailUrl*/ };
+            //thumbnails are causing so many problems. not worth it/
+            return { title, url, videoUrl: media?.reddit_video?.fallback_url,genre/*,thumbnailUrl*/ };
         });
         
    //    console.log(videos);
@@ -90,7 +90,7 @@ const parse_reddit_videos = async (redditJson) =>{
   //  console.log("+++++++++++++Reddit Parse+++++++++++++++: \n" +JSON.stringify(redditJson))
 
     console.log(redditJson.length+ "Here")
-    console.log(redditJson.length+ "Here")
+   
     
         for(let i =0; i< redditJson.length; i++){
             try{
@@ -102,7 +102,7 @@ const parse_reddit_videos = async (redditJson) =>{
                 URL: redditJson[i].url,
                 snippet: redditJson[i].title,
                 video_url: redditJson[i].videoUrl,
-                genre:'memes',
+                genre:redditJson[i].genre,
                 source: redditJson[i].url
             })
             await newMedia.save()
@@ -121,10 +121,10 @@ const parse_reddit_videos = async (redditJson) =>{
   
 }
 //
-const get_reddit_videos = async (redditJsonUrl) =>{
+const get_reddit_videos = async (redditJsonUrl,genre) =>{
 
     return new Promise(async (resolve, reject)=>{
-        const redditVideoJson = await reddit_funny_videos(redditJsonUrl)
+        const redditVideoJson = await reddit_funny_videos(redditJsonUrl,genre)
        parse_reddit_videos(redditVideoJson).then(resolve).catch(reject)
     })
 
@@ -417,20 +417,25 @@ const source = async()=>{
         
         const today = new Date();
         await Promise.allSettled([
-       // get_reddit_videos('https://www.reddit.com/r/funnyvideos/.json'),
+      get_reddit_videos('https://www.reddit.com/r/funnyvideos/.json'),
+       get_reddit_videos('https://www.reddit.com/r/PublicFreakout/.json'),
+      get_reddit_videos('https://www.reddit.com/r/TikTokCringe/.json','cringe'),
+       get_reddit_videos('https://www.reddit.com/r/memes/.json'),
+       get_reddit_videos('https://www.reddit.com/r/cringe/.json','cringe')
         
-        news_io_helper(),
-        news_io_helper("sports","NHL"),
-        news_io_helper("sports","NBA"),
-        news_io_helper("sports","PGA"),
-        news_io_helper("sports","UFC"),
-        news_io_helper("sports","BOXING"),
-        news_io_helper("sports","WBC"),
-        news_io_helper("sports","PFL"),
-        top_goo_feed(),
-        BBC(),
-        get_prlog_feed(),
-        get_9gag()])
+        // news_io_helper(),
+        // news_io_helper("sports","NHL"),
+        // news_io_helper("sports","NBA"),
+        // news_io_helper("sports","PGA"),
+        // news_io_helper("sports","UFC"),
+        // news_io_helper("sports","BOXING"),
+        // news_io_helper("sports","WBC"),
+        // news_io_helper("sports","PFL"),
+        // top_goo_feed(),
+        // BBC(),
+        // get_prlog_feed(),
+        // get_9gag()
+    ])
         console.log("Sourced at " + today.toDateString())
    
 

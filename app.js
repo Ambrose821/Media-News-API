@@ -1,11 +1,13 @@
 var dotenv = require('dotenv');
 
+var fs = require('fs')
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
+var axios = require('axios')
 
 //Routes
 var indexRouter = require('./routes/index');
@@ -28,9 +30,23 @@ var app = express();
 
 var {source, reddit_funny_videos,get_reddit_videos,get_espn_news } = require('./utils/sourcer')
 //Source when server starts
-source();
+
+//Only for Task Scheduluer version of the API
+async function main(){
+  await source();
+
+  process.exit(1)
+}
+
+
+main()
+
+
+
 //Source again 24Hours later
-setInterval(source,1000*60*60*24);
+
+//setInterval(source,1000*60*60*24);
+
 
 
 
