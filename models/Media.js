@@ -25,7 +25,7 @@ const MediaSchema = new mongoose.Schema({
         genre: {
             type: String,
             default: 'general',
-            enum:['news','memes','culture','tech','finance','sportsBigCompany','sportsIO'], //Temporary, soon genre will have its own model with sub genres
+            enum:['news','memes','culture','tech','finance','sportsBigCompany','sportsIO','cringe'], //Temporary, soon genre will have its own model with sub genres
             required: true
         },
         source:{
