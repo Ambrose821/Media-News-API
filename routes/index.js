@@ -15,7 +15,7 @@ router.get('/content_get', async (req,res,next)=>{
   quantity = quantity ? parseInt(quantity) : 10;
   
   let excludeIds = req.body.excludeIds || [];
-
+  console.log("88888888888888888888888888888 Exclude Ids: \n" +excludeIds)
   excludeIds = excludeIds.map(id => mongoose.Types.ObjectId(id));
 
 
