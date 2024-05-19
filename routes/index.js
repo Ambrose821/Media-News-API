@@ -17,7 +17,7 @@ router.post('/content_get', async (req,res,next)=>{
   
   let excludeIds = req.body.excludeIds || [];
   console.log("88888888888888888888888888888 Exclude Ids: \n" +excludeIds +"\n 888888888888888")
-  excludeIds = excludeIds.map(id => mongoose.Types.ObjectId(id));
+  excludeIds = excludeIds.map(id => new mongoose.Types.ObjectId(id));
 
 
   let query = {_id: {$nin: excludeIds} };
