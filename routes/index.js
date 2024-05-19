@@ -8,7 +8,7 @@ const Media = require('../models/Media');
 
 
 //News IO API without client. 2000 Articles per day
-router.get('/content_get', async (req,res,next)=>{
+router.post('/content_get', async (req,res,next)=>{
 
   try{
   var {genre ="",quantity} = req.query
