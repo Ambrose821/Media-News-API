@@ -19,7 +19,7 @@ router.post('/content_get', async (req,res,next)=>{
   console.log("88888888888888888888888888888 Exclude Ids: \n" +excludeIds +"\n 888888888888888")
   excludeIds = excludeIds.map(id => new mongoose.Types.ObjectId(id));
 
-
+//TODO Change the route for Twitter. Only exlude nonn image or video content based on a filter
    let query = {
             _id: { $nin: excludeIds },
             $or: [{ img_url: { $ne: null } }, { video_url: { $ne: null } }]  // Checking for non-null img_url or video_url
