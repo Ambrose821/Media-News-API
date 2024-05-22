@@ -20,7 +20,10 @@ router.post('/content_get', async (req,res,next)=>{
   excludeIds = excludeIds.map(id => new mongoose.Types.ObjectId(id));
 
 
-  let query = {_id: {$nin: excludeIds} };
+   let query = {
+            _id: { $nin: excludeIds },
+            $or: [{ img_url: { $ne: null } }, { video_url: { $ne: null } }]  // Checking for non-null img_url or video_url
+        };
   if(genre){
     query.genre = genre;
   }
