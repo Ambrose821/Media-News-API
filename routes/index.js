@@ -12,7 +12,7 @@ const mongoose = require('mongoose')
 router.post('/content_get', async (req,res,next)=>{
 
   try{
-  var {genre ="",quantity, needMedia} = req.query
+  var {genre ="",quantity} = req.query
   quantity = quantity ? parseInt(quantity) : 10;
   
   let excludeIds = req.body.excludeIds || [];
@@ -20,19 +20,13 @@ router.post('/content_get', async (req,res,next)=>{
   excludeIds = excludeIds.map(id => new mongoose.Types.ObjectId(id));
 
 //TODO Change the route for Twitter. Only exlude nonn image or video content based on a filter
-  if(needMedia == 'true'){
+
    let query = {
             _id: { $nin: excludeIds },
             $or: [{ img_url: { $ne: null } }, { video_url: { $ne: null } }]  // Checking for non-null img_url or video_url
         };
-  }
-  else{
-    let query = {
-            _id: { $nin: excludeIds },
-          
-        };
-    
-  }
+  
+
   if(genre){
     query.genre = genre;
   }
