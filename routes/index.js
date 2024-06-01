@@ -12,7 +12,7 @@ const mongoose = require('mongoose')
 router.post('/content_get', async (req,res,next)=>{
 
   try{
-  var {genre ="",quantity} = req.query
+  var {genre ="",quantity,needMedia = "true"} = req.query
   quantity = quantity ? parseInt(quantity) : 10;
 
     console.log(JSON.stringify(req.body) + "Req body") 
@@ -21,8 +21,11 @@ router.post('/content_get', async (req,res,next)=>{
   console.log("88888888888888888888888888888 Exclude Ids: \n" +excludeIds +"\n 888888888888888")
   excludeIds = excludeIds.map(id => new mongoose.Types.ObjectId(id));
 
+  let query;
 
-  let query = {_id: {$nin: excludeIds} };
+  if(needMedia){
+  query = {_id: {$nin: excludeIds}, $or: [{ img_url: { $ne: null } }, { video_url: { $ne: null } }]};}
+  else{ query = {_id: {$nin: excludeIds}}}
   if(genre){
     query.genre = genre;
   }
