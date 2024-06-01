@@ -15,7 +15,7 @@ router.post('/content_get', async (req,res,next)=>{
   var {genre ="",quantity} = req.query
   quantity = quantity ? parseInt(quantity) : 10;
 
-    console.log(req.body + "Req body") 
+    console.log(JSON.stringify(req.body) + "Req body") 
   
   let excludeIds = req.body.excludeIds || [];
   console.log("88888888888888888888888888888 Exclude Ids: \n" +excludeIds +"\n 888888888888888")
