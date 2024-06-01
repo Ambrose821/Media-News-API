@@ -27,7 +27,7 @@ router.post('/content_get', async (req,res,next)=>{
 
   const media = await Media.find(query).sort({date:-1}).limit(quantity).lean().exec();
   res.status(200).json({media: media, success: true})
-  console.log(media)
+  //console.log(media)
 }catch(err){
     console.log("Errror at /content_get" + err)
   res.status(500).json({success:false, message: `Error at /content_get: ${err}`})
