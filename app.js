@@ -28,11 +28,17 @@ var app = express();
 
 var {source, reddit_funny_videos,get_reddit_videos,get_espn_news } = require('./utils/sourcer')
 //Source when server starts
-source();
+//source();
 //Source again 24Hours later
 setInterval(source,1000*60*60*24);
 
+var{downloadTikTokByTag,downloadVideo} = require('./utils/ttScaper');
+var{ytdlpDownload} = require('./utils/ytdlp')
 
+ytdlpDownload('https://www.tiktok.com/@_funny.official/video/7339934958099680544','video.mp4')
+
+
+//downloadVideo('https://img-9gag-fun.9cache.com/photo/aQEwK8e_460sv.mp4','./')
 
 
 

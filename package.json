@@ -4,21 +4,27 @@
   "private": true,
   "scripts": {
     "start": "node --trace-warnings ./bin/www",
-    "dev": "nodemon ./bin/www"
+    "dev": "nodemon ./bin/www",
+    "postinstall": "./install_ytdlp.sh"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "aws-sdk": "^2.1646.0",
     "axios": "^1.6.7",
     "connect-mongo": "^5.1.0",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^16.4.1",
-    "ejs": "~2.6.1",
-    "express": "~4.16.1",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
     "express-session": "^1.17.3",
     "http-errors": "~1.6.3",
     "mongoose": "^8.1.1",
     "morgan": "~1.9.1",
+    "multer": "^1.4.5-lts.1",
+    "node-ytdlp": "^1.0.0",
     "nodemon": "^3.0.3",
-    "rss-parser": "^3.13.0"
+    "rss-parser": "^3.13.0",
+    "tiktok-scraper": "^1.4.36"
   }
 }
