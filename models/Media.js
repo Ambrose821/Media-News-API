@@ -40,6 +40,10 @@ const MediaSchema = new mongoose.Schema({
         sourced_at:{
             type:Date,
             default: Date.now
+        },
+        source_name:{
+            type: String,
+            default: null
         }
         
         

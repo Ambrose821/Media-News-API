@@ -33,10 +33,17 @@ var {source, reddit_funny_videos,get_reddit_videos,get_espn_news } = require('./
 setInterval(source,1000*60*60*24);
 
 var{downloadTikTokByTag,downloadVideo} = require('./utils/ttScaper');
-var{ytdlpDownload} = require('./utils/ytdlp')
+var{ytdlpDownload,ytdlpDownloadToS3} = require('./utils/ytdlp')
 
-ytdlpDownload('https://www.tiktok.com/@_funny.official/video/7339934958099680544','video.mp4')
+ytdlpDownloadToS3('https://www.tiktok.com/@_funny.official/video/7339934958099680544','/videos/video.mp4')
+//ytdlpDownload('https://www.tiktok.com/@_funny.official/video/7339934958099680544','video.mp4')
 
+var{uploadFilesToS3} = require('./utils/awsDB');
+
+
+// Corrected path to the `video.mp4` file inside the `funny_videos` folder
+const videoFilePath = path.join(__dirname, 'funny_videos', 'video.mp4');
+//uploadFilesToS3(videoFilePath)
 
 //downloadVideo('https://img-9gag-fun.9cache.com/photo/aQEwK8e_460sv.mp4','./')
 
