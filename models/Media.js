@@ -24,10 +24,11 @@ const MediaSchema = new mongoose.Schema({
         },
         genre: {
             type: String,
-            default: 'general',
-            enum:['news','memes','culture','tech','finance','sportsBigCompany','sportsIO','cringe'], //Temporary, soon genre will have its own model with sub genres
+            default: 'general',                                                                           //'funny' is currently tiktok                                 // science is currently tik tok
+            enum:['news','memes','culture','tech','finance','sportsBigCompany','sportsIO','cringe','ufc','funny','gambling','fitness','cooking','pga','mlb','nfl','nba','science'/* science is currently tik tok only*/,'trynottolaugh','travel','crypto'], //Temporary, soon genre will have its own model with sub genres
             required: true
         },
+        
         source:{
            type: String,
            default:"Source below",

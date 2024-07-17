@@ -5,20 +5,24 @@ const { PassThrough } = require('stream');
 const { pipeline } = require('stream');
 const { promisify } = require('util');
 const { Upload } = require('@aws-sdk/lib-storage');
+var dotenv= require('dotenv');
 
-const s3 = new S3Client({
-  region:process.env.AWS_REGION,
-  credentials:{
-      secretAccessKey: process.env.AWSS3_SECRET,
-      accessKeyId : process.env.AWSS3_ACCESS,
-      
-  }
-})
 
-const bucketName = process.env.AWSS3_BUCKET_NAME;
 
 
 const ytdlpDownloadToS3 = async (url, key) => {
+  const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials:{
+        secretAccessKey:process.env.AWSS3_SECRET,
+        accessKeyId : process.env.AWSS3_ACCESS,
+        
+    }
+  })
+  
+  const bucketName = process.env.AWSS3_BUCKET_NAME;
+
+
   return new Promise((resolve, reject) => {
     const ytdlp = spawn('yt-dlp', ['-o', '-', url]);
 
@@ -37,8 +41,9 @@ const ytdlpDownloadToS3 = async (url, key) => {
     });
 
     upload.done().then(() => {
+      const ret_url = `https://${process.env.AWSS3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
       console.log(`File uploaded successfully. URL: https://${bucketName}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`);
-      resolve();
+      resolve(ret_url);
     }).catch((err) => {
       console.error('S3 upload failed.', err);
       reject(err);

@@ -31,6 +31,7 @@ const parser = new RssParser();
 const Media = require('../models/Media');
 const { resolve } = require('path');
 //const { get } = require('../app');
+const {ytdlpDownload,ytdlpDownloadToS3} = require('./ytdlp')
 
 function parseMediaLinks(htmlString) {
     const videoPattern = /<video.*poster="([^"]+)".*><source src="([^"]+)" type="video\/mp4"><\/video>/;
@@ -271,7 +272,7 @@ const get_espn_news = async (urlString, filename = "default.JSON") =>{
 
 
 //Base method for collecting feed from any given url. C
-const get_feed = async(urlString,filename = "default.json") =>{
+const get_feed = async(urlString) =>{
     try{
         const feed = await parser.parseURL(urlString)
        
@@ -290,6 +291,57 @@ const get_feed = async(urlString,filename = "default.json") =>{
     }catch(err){
         console.log("Error at Base get_feed: " + err)
     }
+}
+
+const get_feed_file_test = async(urlString, filename = "default.json") => {
+    const feed = await parser.parseURL(urlString)
+    feedString = JSON.stringify(feed,null,2)// feed to convert to string, specified items, spacing
+    fs.appendFile(filename,feedString, (err)=>{
+        if(err) throw err;
+        console.log(`RSS feed ${urlString} written to file: ${filename}`)
+    })
+}
+
+const parse_tt = async(feed,genre) =>{
+
+    const content = feed;
+
+    for(var i =0; i <content.length; i++){
+       try{ 
+        var stuff =  content[i];
+        const test_for_duplicate = await Media.findOne({title:stuff.title});
+        if(test_for_duplicate){
+            console.log("Skipping duplicate in pares_tt: " + stuff.title + " Not downloading to AWS S3 Bucket")
+        }else{
+
+            const video_url = await ytdlpDownloadToS3(stuff.link,`tiktok/${genre}/${stuff.guid}`)
+            console.log("New TT Video url in sourcer : "+ video_url)
+
+            const media = new Media({
+                title: stuff.title,
+                URL: video_url,
+                date: stuff.isoDate,
+                source_name: "tiktok",
+                genre: genre
+
+            })
+            await media.save();
+
+            
+        }
+    }catch(err){
+        console.error("Error in parse_tt Loop, Skipping problematic media. Error--> " + err) 
+    }
+    }
+    console.log("Done Sourcing fromt TT of genre: " + genre)
+
+}
+
+const ttSource = async(ttRSS,genre) =>{
+    return new Promise((resolve,reject)=>{
+        get_feed(ttRSS).then(feed =>{parse_tt(feed,genre)}).then(resolve).catch(reject)
+
+    })
 }
 
 const parse_espn_db = async (feed)=>{
@@ -411,6 +463,17 @@ const parse_NewsIo = async (feed)=>{
     console.log("onesec")
 
 }
+
+
+
+const ttSourcer = async () =>{
+
+        const today = new Date();
+        await Promise.allSettled();
+
+        ttSource('https://rss.app/feeds/5wCz5S36XthCVbYn.xml','funny')//try not to laugh
+        ttSource()
+}
 const source = async()=>{
     
     
@@ -432,9 +495,33 @@ const source = async()=>{
         get_prlog_feed(),
         get_9gag()])
         console.log("Sourced at " + today.toDateString())
-   
+
+}
+const fullTTSource = async () =>{
+
+    await Promise.allSettled([
+        ttSource("https://rss.app/feeds/5fdisHCWLdpg5QLf.xml",'funny'),
+        ttSource("https://rss.app/feeds/Du9lH3DbVA6rx9hb.xml",'funny'),
+        ttSource("https://rss.app/feeds/5wCz5S36XthCVbYn.xml",'trynottolaugh'),//trynottolaugh
+        ttSource("https://rss.app/feeds/Re6SlOA6j8gTNwVO.xml",'ufc'),
+        ttSource("https://rss.app/feeds/JqSKjzxSLsOKDQp4.xml",'nfl'),
+        ttSource("https://rss.app/feeds/G3AMaHmusnLacmp3.xml",'mlb'), 
+        ttSource("https://rss.app/feeds/8d26MV765SkHEYY6.xml",'nba'),
+        ttSource("https://rss.app/feeds/besZ0NdCfWWNqciK.xml",'pga'),
+        ttSource("https://rss.app/feeds/C7lmJRx2pmyWHGrR.xml",'science'),
+        ttSource("https://rss.app/feeds/edUbizXqTrrGAuyR.xml",'tech'),
+        ttSource("https://rss.app/feeds/gXGIp2gnxc6cNbLF.xml",'gambling'),
+        ttSource("https://rss.app/feeds/jlhcYgQNQS5Am0Ot.xml",'travel'),
+        ttSource("https://rss.app/feeds/FEeXDeAbqBPWzsOQ.xml",'crypto')
+        
+
+        
+       
+        
+    ])
 
 }
 
 
-module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_news_io,source,reddit_funny_videos,get_reddit_videos,get_espn_news }
+
+module.exports = {top_goo_feed, BBC, get_prlog_feed, get_9gag, get_news_io,source,reddit_funny_videos,get_reddit_videos,get_espn_news,get_feed_file_test,ttSource,fullTTSource }

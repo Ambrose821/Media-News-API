@@ -17,6 +17,7 @@ const Media = require('./models/Media')
 
 //Load config file
 dotenv.config({path: './config/config.env'})
+console.log(process.env.AWSS3_BUCKET_NAME)
 
 var mongoose = require('mongoose')
 var MongoStore = require('connect-mongo')
@@ -26,17 +27,22 @@ connectDB()
 
 var app = express();
 
-var {source, reddit_funny_videos,get_reddit_videos,get_espn_news } = require('./utils/sourcer')
+var {source, reddit_funny_videos,get_reddit_videos,get_espn_news, get_feed_file_test ,ttSource, fullTTSource } = require('./utils/sourcer')
+
+//fullTTSource()
 //Source when server starts
-//source();
+source();
 //Source again 24Hours later
 setInterval(source,1000*60*60*24);
 
 var{downloadTikTokByTag,downloadVideo} = require('./utils/ttScaper');
 var{ytdlpDownload,ytdlpDownloadToS3} = require('./utils/ytdlp')
 
+
+
 ytdlpDownloadToS3('https://www.tiktok.com/@_funny.official/video/7339934958099680544','/videos/video.mp4')
 //ytdlpDownload('https://www.tiktok.com/@_funny.official/video/7339934958099680544','video.mp4')
+
 
 var{uploadFilesToS3} = require('./utils/awsDB');
 
@@ -48,6 +54,11 @@ const videoFilePath = path.join(__dirname, 'funny_videos', 'video.mp4');
 //downloadVideo('https://img-9gag-fun.9cache.com/photo/aQEwK8e_460sv.mp4','./')
 
 
+//
+//get_feed_file_test("https://rss.app/feeds/5fdisHCWLdpg5QLf.xml","ttTest2.json")
+
+
+//ttSource("https://rss.app/feeds/5fdisHCWLdpg5QLf.xml",'funny')
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
