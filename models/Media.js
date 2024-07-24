@@ -45,6 +45,14 @@ const MediaSchema = new mongoose.Schema({
         source_name:{
             type: String,
             default: null
+        },
+        is_short_form_processed: {
+            type: Boolean,
+            default: false
+        },
+        credit_to:{
+            type: String,
+            default: null
         }
         
         

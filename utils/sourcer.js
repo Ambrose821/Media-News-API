@@ -322,7 +322,8 @@ const parse_tt = async(feed,genre) =>{
                 URL: video_url,
                 date: stuff.isoDate,
                 source_name: "tiktok",
-                genre: genre
+                genre: genre,
+                credit_to: stuff.creator
 
             })
             await media.save();
@@ -502,7 +503,7 @@ const fullTTSource = async () =>{
     await Promise.allSettled([
         ttSource("https://rss.app/feeds/5fdisHCWLdpg5QLf.xml",'funny'),
         ttSource("https://rss.app/feeds/Du9lH3DbVA6rx9hb.xml",'funny'),
-        ttSource("https://rss.app/feeds/5wCz5S36XthCVbYn.xml",'trynottolaugh'),//trynottolaugh
+      
         ttSource("https://rss.app/feeds/Re6SlOA6j8gTNwVO.xml",'ufc'),
         ttSource("https://rss.app/feeds/JqSKjzxSLsOKDQp4.xml",'nfl'),
         ttSource("https://rss.app/feeds/G3AMaHmusnLacmp3.xml",'mlb'), 
