@@ -9,7 +9,8 @@ const Jimp = require('jimp');
 
 const ffmpeg = require('fluent-ffmpeg')
 var videoshow = require('videoshow')
-var {Readable} = require ('stream')
+var {Readable} = require ('stream');
+var {uploadReadableBufferToS3} = require('./awsDB')
 const photoAddGradientAndText = async (imageURL,text, identifier, watermarkType, waterMarkUrlOrText) =>{
     try{
     const image = await Jimp.read(imageURL);
@@ -90,7 +91,9 @@ const photoAddGradientAndText = async (imageURL,text, identifier, watermarkType,
     const imageBuffer = await image.getBufferAsync(Jimp.MIME_PNG)
     console.log("Done Jimp image processing")
 
-    photoToVideo(imageBuffer,false,'1')
+    const newpath = await photoToVideo(imageBuffer,true,'1')
+
+    //console.log('newpath' + newpath)
     
     return imageBuffer;
 
@@ -111,57 +114,79 @@ const bufferToStream = (imageOrVidBuffer) =>{
 }
 const photoToVideo = async (imageBuffer, addCCMusicBool,identifier) =>{
     
-    /* ***************************   /
+    /* ***************************   */
     // TODO                        //
     // - CODE FOR AUDIO HANDLEING AUDIO Bool  //
     //                           //
-    /************************** */
-    const videoOutputPath = `output_video${identifier}.mp4`
+   const imageStream = bufferToStream(imageBuffer)
+   const videoOutputPath = `temp_pic2vid_${identifier}.mp4`;
 
-    const bufferStream = bufferToStream(imageBuffer)
+   return new Promise(async(resolve,reject) =>{
+    const command = new ffmpeg()
 
-    const images = [{path:'output.png', loop:10}]
-    const videoOptions = {
-        fps: 25,
-        loop: 10, // seconds
-        transition: false,
-        videoBitrate: 1024,
-        videoCodec: 'libx264',
-        size: '1080x1080',
-        audioBitrate: '128k',
-        audioChannels: 2,
-        format: 'mp4',
-        pixelFormat: 'yuv420p'
+    command
+    .input(imageStream)
+    .inputFormat('image2pipe')
+    
+    .inputOptions('-framerate 1/' + 10)
+    .output(videoOutputPath)
+    .outputOptions('-pix_fmt yuv420p')
+   
+
+    if(addCCMusicBool){
+        console.log("Audio True")
+        var musicArr;
+        var audioOptions; 
+        
+        
+       audioOptions =
+         fs.readdirSync('royaltyFreeMusic/');
+
+
+     
+        //console.log(typeof audioOptions)
+        const audioTrackIndex = Math.floor(Math.random()* audioOptions.length)
+       // console.log(audioOptions[audioTrackIndex])
+        command.input(`royaltyFreeMusic/${audioOptions[audioTrackIndex]}`).outputOptions('-shortest')
     }
-
-    await new Promise((resolve,reject) => {
-        videoshow(images,videoOptions)
-        .save(videoOutputPath)
-            .on('start', function(command){
-                console.log("Starting ffmpeg process: " + command)
-            }).on('error', function(err,stdout,stderr){
-                console.error('Error in photoToVideo(): ' +err +
-                '\n ffmpeg stderr: ' + stderr
-                )
-                console.log('ffmpeg stdout: '+ stdout)
-                reject(err)
-
-            }).on('end',function(output) {
-                console.log('ffmpeg phototo Video complete. \n identifier: ' + identifier + '\n ffmpeg output: ' +output)
-                resolve();
-            })
-
-           
+    
+    command.on('start',(command) =>{
+        console.log('FFMPEG started photo to video: ' +command)
     })
+    .on('end', async () =>{
+        console.log(`ffmpeg photo To video finished for output_${identifier}.mp4`)
+        const videoBuffer = await fs.promises.readFile(videoOutputPath);
+    
+        
+        resolve(videoBuffer)
+        await fs.promises.unlink(videoOutputPath)
+    })
+    .on('error',(err)=>{
+        console.error("Photo To Video Error:" + err)
+        reject(err)
 
-    const videoBuffer = await fs.promises.readFile(videoOutputPath)
-   // await fs.promises.unlink(videoOutputPath);
-     return videoBuffer
+    })
+    .run()})
+    
+
+//     const videoBuffer = await fs.promises.readFile(videoOutputPath)
+//    // await fs.promises.unlink(videoOutputPath);
+//      return videoBuffer
 };
 
 
+const photoToVideoPostToS3 = async (imageURL,text, identifier, watermarkType, waterMarkUrlOrText,audioBool) =>{
+    const imageBuffer = await photoAddGradientAndText(imageURL,text,identifier,watermarkType,waterMarkUrlOrText);
+    const videoBuffer = await photoToVideo(imageBuffer,audioBool,identifier)
+    const readableBuffer = await bufferToStream(videoBuffer) 
+    const uploadS3Url = await uploadReadableBufferToS3(readableBuffer,identifier,'video/mp4')
+    return uploadS3Url;
 
-module.exports = {photoAddGradientAndText}
+
+}
+
+
+module.exports = {photoAddGradientAndText,photoToVideoPostToS3}
 
 //https://www.nyasatimes.com/wp-content/uploads//436799839_1027172572102940_8958354155021222021_n.jpg
-//https://media-api.twic.pics
+//https://media-api.twic.picsy

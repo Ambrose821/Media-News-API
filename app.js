@@ -31,18 +31,18 @@ var app = express();
 var {source, reddit_funny_videos,get_reddit_videos,get_espn_news, get_feed_file_test ,ttSource, fullTTSource } = require('./utils/sourcer')
 //fullTTSource()
 //Source when server starts
-source();
+//source();
 //Source again 24Hours later
 setInterval(source,1000*60*60*24);
 //for ffmpeg install --save commit
 
 
 //Mediaprocess testing
-var {photoAddGradientAndText}= require('./utils/mediaProcessor')
+var {photoAddGradientAndText,photoToVideoPostToS3}= require('./utils/mediaProcessor')
 //const photoAddGradientAndText = async (imageURL,text, identifier, watermarkType, waterMarkUrlOrText) =>{
+//photoAddGradientAndText('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",'1','text','Breaking')
 
-photoAddGradientAndText('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",'1','text','Breaking')
-
+photoToVideoPostToS3('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",'1','text','Breaking',true)
 var{downloadTikTokByTag,downloadVideo} = require('./utils/ttScaper');
 var{ytdlpDownload,ytdlpDownloadToS3} = require('./utils/ytdlp')
 
