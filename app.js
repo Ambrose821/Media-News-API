@@ -31,7 +31,7 @@ var app = express();
 var {source, reddit_funny_videos,get_reddit_videos,get_espn_news, get_feed_file_test ,ttSource, fullTTSource } = require('./utils/sourcer')
 //fullTTSource()
 //Source when server starts
-//source();
+source();
 //Source again 24Hours later
 setInterval(source,1000*60*60*24);
 
