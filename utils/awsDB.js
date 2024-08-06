@@ -44,7 +44,7 @@ const uploadFilesToS3 = async(filePath) =>{
 }
 const uploadReadableBufferToS3 = async (readableBuffer,identifier,contentType) =>{
     try{
-        const content = readableBuffer;
+     
         const pass = new PassThrough()
         const upload = new Upload({
             client: s3,

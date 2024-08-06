@@ -1,16 +1,17 @@
 
 
+
 const Media = require('../models/Media')
 const axios = require('axios')
 const fs = require('fs');
-const ImageKit = require('imagekit')
-
+const { Readable, PassThrough,pipeline } = require('stream');
 const Jimp = require('jimp');
 
 const ffmpeg = require('fluent-ffmpeg')
 var videoshow = require('videoshow')
-var {Readable} = require ('stream');
+
 var {uploadReadableBufferToS3} = require('./awsDB')
+
 const photoAddGradientAndText = async (imageURL,text, identifier, watermarkType, waterMarkUrlOrText) =>{
     try{
     const image = await Jimp.read(imageURL);
@@ -91,7 +92,7 @@ const photoAddGradientAndText = async (imageURL,text, identifier, watermarkType,
     const imageBuffer = await image.getBufferAsync(Jimp.MIME_PNG)
     console.log("Done Jimp image processing")
 
-    const newpath = await photoToVideo(imageBuffer,true,'1')
+    
 
     //console.log('newpath' + newpath)
     
@@ -179,14 +180,194 @@ const photoToVideoPostToS3 = async (imageURL,text, identifier, watermarkType, wa
     const imageBuffer = await photoAddGradientAndText(imageURL,text,identifier,watermarkType,waterMarkUrlOrText);
     const videoBuffer = await photoToVideo(imageBuffer,audioBool,identifier)
     const readableBuffer = await bufferToStream(videoBuffer) 
-    const uploadS3Url = await uploadReadableBufferToS3(readableBuffer,identifier,'video/mp4')
+   const uploadS3Url = await uploadReadableBufferToS3(readableBuffer,identifier,'video/mp4')
     return uploadS3Url;
 
 
 }
 
+//TODO. FFMPEG SCALING FOR BACKGROUND IS CURRENTLY HARDCODED TO 1080X1920. WILL NEED THIS TO BE VARIABLE BASED WHENEVER WE ADD
+//CUSTOM BACKGROUND DIMENSIONS
+const videoToVideoPost = async(videoURL, text, identifier, watemarkType, waterMarkUrlOrText) =>{
 
-module.exports = {photoAddGradientAndText,photoToVideoPostToS3}
+   //TODO Add if(videoURL.includes('http') in order to account for if a user version of this program allows file upload)
+    const background = new Jimp(1080,1920,0x000000FF)
+    const bgHeight = background.bitmap.height;
+    const bgWidth = background.bitmap.width;
+
+
+    const font = await Jimp.loadFont('fonts/customFont.fnt');
+
+    const textWidth = Jimp.measureText(font,text);
+
+    const textX = (bgWidth - textWidth)/2;
+    const textY = bgHeight *1/5
+    
+    await background.print(font,10 ,textY,{text:text, alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,alignmentY:Jimp.VERTICAL_ALIGN_MIDDLE},bgWidth-20)
+
+
+    let watermark;
+
+    if(watemarkType != 'url'){
+        const small_font_path = 'fonts/smallChunk.fnt';
+    
+        watermarkExtraMargin = 20
+
+         watermark = new Jimp(200, 50, 0xFFFFFFFF);    
+         const watermarkFont =  await Jimp.loadFont(small_font_path)
+
+
+         const textWidth = Jimp.measureText(watermarkFont, waterMarkUrlOrText);
+         const textHeight = Jimp.measureTextHeight(watermarkFont, waterMarkUrlOrText,200)
+
+         let x = (watermark.bitmap.width-textWidth)/2
+         let y = (watermark.bitmap.height - textHeight)/2
+         watermark.print(watermarkFont,x,y,waterMarkUrlOrText)
+
+    }
+    else{
+        watermark = await Jimp.read(waterMarkUrlOrText);
+
+    
+        watermark = await watermark.resize(200,200)
+        watermark.circle()
+        
+
+    }
+    await background.composite(watermark,bgWidth *1/12,bgHeight*1/16,{
+    
+        mode: Jimp.BLEND_SOURCE_OVER,
+        opacityDest:1,
+        opacitySource:0.85
+    })
+
+    const tempImageFile = `tempfile_${identifier}.png`
+    const backgroundImage = await background.writeAsync(tempImageFile);
+//     const backgroundBuffer =  await background.getBufferAsync(Jimp.MIME_PNG)
+//    const backgroundStream = bufferToStream(backgroundBuffer)
+   
+  
+    const videoBuffer = new PassThrough()
+
+    const response = await axios({
+        url: videoURL,
+        method: 'GET',
+        responseType: 'stream'    })
+    response.data.pipe(videoBuffer);
+
+    const outputPath =`outVid_${identifier}.mp4`
+
+    //Overlay Video On background
+   const newVideoBuffer =  await overlayVidBufferOnPhoto(videoBuffer,tempImageFile,outputPath)
+   console.log('done overlay')
+   const readableBuffer = bufferToStream(newVideoBuffer) 
+   const uploadS3Url = await uploadReadableBufferToS3(readableBuffer,identifier,'video/mp4')
+    return uploadS3Url;
+
+
+
+
+   
+}
+
+// const backgroundPhotoToVidStream = (photoBuffer) =>{
+//     const photoBufferStream = bufferToStream(photoBuffer);
+
+//     return new Promise((resolve, reject) => {
+//         const outputStream = new PassThrough();
+//         const ffmpegProcess = ffmpeg(photoBufferStream)
+//           .inputFormat('image2pipe')
+//           .loop(1)
+//           .duration(5)
+//           .outputOptions('-pix_fmt yuv420p')
+//           .format('mp4') // Correctly format the output as mp4
+//           .on('error', (err) => {
+//             console.error('Error in backgroundPhotoToVidStream(): ' + err);
+//             reject(err);
+//           })
+//           .on('end', () => {
+//             console.log('Background image converted to video Buffer');
+//             resolve(outputStream);
+//           });
+    
+//         ffmpegProcess.pipe(outputStream, { end: true });
+//       });
+// }
+
+
+
+
+const overlayVidBufferOnPhoto = (videoBuffer,tempImageFile,outputPath) =>{
+    return new Promise(async (resolve,reject) =>{
+     
+        ffmpeg()
+        .input(videoBuffer)//this is
+        .inputFormat('mp4')
+        .input(tempImageFile)
+       
+        
+        .complexFilter([
+            '[1:v]scale=1080:1920,setsar=1[bg]', // Scale background and set SAR
+            '[0:v]scale=920:-1,setsar=1[v0]', // Scale main video while preserving aspect ratio
+            '[bg][v0]overlay=(main_w-overlay_w)/2 :(main_h-overlay_h)/2+100[v1]' // Overlay the video on the background
+           
+        ])
+        .map('[v1]')
+        .outputOptions('-pix_fmt yuv420p')
+        .output(outputPath)
+        .on('end',async()=>{
+            console.log('Video with background created successfully: '+outputPath)
+            await fs.promises.unlink(tempImageFile)
+            console.log('temporary image background file deleted '+ tempImageFile)
+            const outputBuffer = await fs.promises.readFile(outputPath);
+         
+            resolve(outputBuffer)
+            await fs.promises.unlink(outputPath)
+            
+        })
+        .on('error',(err)=>{
+            console.error("Error in videoToVideoPost() ffmpeg: "+err )
+            reject()
+        })
+     
+       .run()
+       
+
+        // const buffers = []; //will contain all chunks from a stream
+        // bufferStream.on('data', (buf) =>{
+        //     buffers.push(buf)
+        // })
+        // .on('end',()=>{
+        //     const outputBuffer = Buffer.concat(buffers)//merge all the chunks
+        //     resolve(outputBuffer)
+        // })
+    
+    
+    
+    })
+}
+
+
+const downloadFile = async (url, downloadPath) =>{
+    console.log("starting download")
+    const writer = fs.createWriteStream(downloadPath);
+
+    const response = await axios({
+        url,
+        method: 'GET',
+        responseType: 'stream'    })
+
+    response.data.pipe(writer);
+
+    return  new Promise((resolve,reject) =>{
+        writer.on('finish',resolve);
+        writer.on('error',reject)
+    })
+
+}
+
+
+module.exports = {photoAddGradientAndText,photoToVideoPostToS3,videoToVideoPost,downloadFile}
 
 //https://www.nyasatimes.com/wp-content/uploads//436799839_1027172572102940_8958354155021222021_n.jpg
 //https://media-api.twic.picsy
