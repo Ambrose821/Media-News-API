@@ -1,7 +1,3 @@
-[nixpacksPlan]
-phases = {
-    setup = {
-        aptPkgs = ["ffmpeg"]
-    }
-}
+[nixpacks]
+phases.setup.aptPkgs = ["ffmpeg"]
 providers = ["node"]
