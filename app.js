@@ -45,9 +45,9 @@ var {photoAddGradientAndText,photoToVideoPostToS3,videoToVideoPost,downloadFile}
 //videoToVideoPost('https://img-9gag-fun.9cache.com/photo/anzL5dE_460sv.mp4',"xxxxxxxxxxxxxxxxorschel shines in rain to lead Open after brutal third round",'5','url','https://mediaapibucket.s3.amazonaws.com/A0B9D430-DCA8-47F1-9639-8A52A20E95D7+(1).PNG')
 //videoToVideoPost('https://img-9gag-fun.9cache.com/photo/anzL5dE_460sv.mp4',"xxxxxxxxxxxxxxxxorschel shines in rain to lead Open after brutal third round",'99','TEXT','Crazy')
 //Testing This in large quantities
-// for(var i =10; i <25; i++){
-//   videoToVideoPost('https://img-9gag-fun.9cache.com/photo/anzL5dE_460sv.mp4',"xxxxxxxxxxxxxxxxorschel shines in rain to lead Open after brutal third round",String(i),'TEXT','Crazy')}
-//photoToVideoPostToS3('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",String(i),'text','Breaking',true)}
+for(var i =10; i <25; i++){
+   videoToVideoPost('https://img-9gag-fun.9cache.com/photo/anzL5dE_460sv.mp4',"xxxxxxxxxxxxxxxxorschel shines in rain to lead Open after brutal third round",String(i),'TEXT','Crazy')}
+photoToVideoPostToS3('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",String(i),'text','Breaking',true)}
 // var{downloadTikTokByTag,downloadVideo} = require('./utils/ttScaper');
 // var{ytdlpDownload,ytdlpDownloadToS3} = require('./utils/ytdlp')
 //downloadFile('https://img-9gag-fun.9cache.com/photo/anzL5dE_460sv.mp4','tester.mp4')
