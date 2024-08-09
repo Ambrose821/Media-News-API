@@ -12,6 +12,9 @@ var videoshow = require('videoshow')
 
 var {uploadReadableBufferToS3} = require('./awsDB')
 
+const pLimit = require('p-limit')
+
+
 const photoAddGradientAndText = async (imageURL,text, identifier, watermarkType, waterMarkUrlOrText) =>{
     try{
     const image = await Jimp.read(imageURL);

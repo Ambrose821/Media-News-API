@@ -13,7 +13,7 @@ var usersRouter = require('./routes/users');
 
 //Models
 const Media = require('./models/Media')
-
+const pLimit = require('p-limit')
 
 //Load config file
 dotenv.config({path: './config/config.env'})
@@ -47,9 +47,25 @@ var {photoAddGradientAndText,photoToVideoPostToS3,videoToVideoPost,downloadFile}
 //Testing This in large quantities
 photoToVideoPostToS3('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",'88','text','Breaking',true)
 try{
-for(var i =10; i <25; i++){
- //  videoToVideoPost('https://img-9gag-fun.9cache.com/photo/anzL5dE_460sv.mp4',"xxxxxxxxxxxxxxxxorschel shines in rain to lead Open after brutal third round",String(i),'TEXT','Crazy')
-photoToVideoPostToS3('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",String(i),'text','Breaking',true)}
+
+  const process_limit = pLimit(5);
+
+  const ffmpeg_tasks = Array.from({length: 25},(_,i)=>{
+    return(process_limit(()=>{
+      const identifier = i+1
+      return photoToVideoPostToS3('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",String(identifier),'text','Breaking',true)
+    }))
+  })
+  Promise.all(ffmpeg_tasks).then(results =>{
+    console.log('photo to videos done')
+    console.log(results)
+  })
+  .catch(err =>{console.error("Error in rate limted ffmpeg taskL: ",err)})
+//try limiting the number of concurrent ffmpeg processes running this code for railway deployment  
+// for(var i =10; i <25; i++){
+//  //  videoToVideoPost('https://img-9gag-fun.9cache.com/photo/anzL5dE_460sv.mp4',"xxxxxxxxxxxxxxxxorschel shines in rain to lead Open after brutal third round",String(i),'TEXT','Crazy')
+ 
+// photoToVideoPostToS3('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",String(i),'text','Breaking',true)}
 }catch(err)
 {
    console.error("test err: " + err)
