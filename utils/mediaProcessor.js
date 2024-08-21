@@ -18,41 +18,78 @@ const pLimit = require('p-limit')
 const fixRedditUrl = async (bad_url,identifier) =>{
     try{
         var audio = bad_url.replace(/DASH_\d+/, 'DASH_AUDIO_128')
-        var outputPath = `./public/videos/${identifier}_merged.mp4`
+        var outputPath = `${identifier}_merged.mp4`
         var local_path = ``
-        var video_url = '' ;
         
-       ffmpeg().addInput(bad_url)
-       .addInput(audio)
-       .output(outputPath)
-       .on('error', async function(err){
-        
-        if(err.message.includes('343616999')){ 
-        console.log("No corresponding Audio for this video, returning no sound video")
-        //await downloadFile(bad_url,outputPath);
-        local_path = `/videos/${identifier}_merged.mp4`
-         video_url = 'https://socialmediamanager-production.up.railway.app' + local_path;
-        return{video_url: video_url, local_path:outputPath}
-            
-    }
-        else{console.log("Non-missing audio error ine Merge with Message: "+ err.message + "\n Skipping this post")}
+        var audio_file_path = `temp_audio_${identifier}.mp4`;
+        var audio_temp = await downloadFile(audio,audio_file_path)
 
-       }).on('end',function(){
-        console.log('Merging finished')
-        local_path = `/videos/${identifier}_merged.mp4`
-        video_url = 'https://socialmediamanager-production.up.railway.app' + local_path;
+        
+        // var video_temp_path =  `temp_video_${identifier}.mp4`
+        // var video_temp = await downloadFile(bad_url,video_temp_path)
+        var videoBuffer = await downloadMediaToBuffer(bad_url);
+        var videoStream = await bufferToStream(videoBuffer);
+
        
-    }).output(outputPath)
-       .run()
+        return new Promise((resolve,reject)=>{
+            ffmpeg().addInput(videoStream)
+            .addInput(audio_file_path)
+            .output(outputPath)
+            .on('error', async function(err){
+             
+             if(err.message.includes('343616999')){ 
+             console.log("No corresponding Audio for this video, returning no sound video")
+             //await downloadFile(bad_url,outputPath);
+             const outputBuffer = await fs.promises.readFile(outputPath)
+             resolve(outputBuffer);
+             try{
+             await fs.promises.unlink(outputPath)
+             await fs.promises.unlink(audio_file_path)
+             }catch(err){
+                console.error('fixRedditUrl unlink error')
+                resolve(outputBuffer)
+             }
+                 
+         }
+             else{console.log("Non-missing audio error ine Merge with Message: "+ err.message + "\n Skipping this post")}
+             resolve(null)
+     
+            }).on('end', async function(){
+             console.log('Merging finished')
+             const outputBuffer = await fs.promises.readFile(outputPath)
+             resolve(outputBuffer);
+             
+             try{
+                await fs.promises.unlink(outputPath)
+                await fs.promises.unlink(audio_file_path)
+                }catch(err){
+                   console.error('fixRedditUrl unlink error')
+                   resolve(outputBuffer)
+                }
+            
+            
+         })
+         .on('error', async (err) =>{
+            console.error("Error in FFMPEG fixRedditUrl: "+ err)
+            resolve(null)
+         })
+            .run()
+     
 
-      return{video_url: video_url, local_path:outputPath}
+        })
+
+   
+   
      
 
     }catch(err){
         console.error('Error with ffmpeg fixing reddit_url: ' + err)
+        
   
 }
 }
+
+
 
 const photoAddGradientAndText = async (imageURL,text, identifier, watermarkType, waterMarkUrlOrText) =>{
     try{
@@ -410,20 +447,26 @@ const downloadFile = async (url, downloadPath) =>{
 //for downloading photos videos audio and other media to a buffer
 
 
-const downloadMediaToBuffer = async (url,identifier) =>{
+const downloadMediaToBuffer = async (url) =>{
     console.log("starting download to buffer");
 
-    const fileBuffer;
-
-    const response = await axios({
+    let response = await axios({
         url,
         method: 'GET',
-        resp
+        responseType: 'arraybuffer'
     })
+
+    const buffer = Buffer.from(response.data)
+
+    return buffer
+
+    
+
+
 }
 
 
-module.exports = {photoAddGradientAndText,photoToVideoPostToS3,videoToVideoPost,downloadFile}
+module.exports = {photoAddGradientAndText,photoToVideoPostToS3,videoToVideoPost,downloadFile,fixRedditUrl}
 
 //https://www.nyasatimes.com/wp-content/uploads//436799839_1027172572102940_8958354155021222021_n.jpg
 //https://media-api.twic.picsy

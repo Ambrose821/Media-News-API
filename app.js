@@ -38,7 +38,35 @@ setInterval(source,1000*60*60*24);
 
 
 //Mediaprocess testing
-var {photoAddGradientAndText,photoToVideoPostToS3,videoToVideoPost,downloadFile}= require('./utils/mediaProcessor')
+var {photoAddGradientAndText,photoToVideoPostToS3,videoToVideoPost,downloadFile,fixRedditUrl}= require('./utils/mediaProcessor')
+
+
+
+
+//downloadFile('https://v.redd.it/m98rudox5cxc1/DASH_720.mp4?source=fallback','11')
+
+
+  // const process_limit = pLimit(4);
+
+  // const ffmpeg_tasks = Array.from({length: 5},(_,i)=>{
+  //   return(process_limit(async ()=>{
+  //     const identifier = i+1
+  //     try{
+  //      return await fixRedditUrl("https://v.redd.it/m98rudox5cxc1/DASH_720.mp4?source=fallback ","title"+identifier)
+  //     }catch(err){
+  //       console.log("error")
+  //     }
+  //   }))
+  // })
+  // Promise.all(ffmpeg_tasks).then(results =>{
+  //   console.log('fixredditURL Done')
+  //   //console.log(results)
+  // })
+  // .catch(err =>{console.error("Error in rate limted ffmpeg taskL: ",err)})
+
+
+
+
 //const photoAddGradientAndText = async (imageURL,text, identifier, watermarkType, waterMarkUrlOrText) =>{
 //photoAddGradientAndText('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",'1','text','Breaking')
 //photoToVideoPostToS3('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",String(1),'text','Breaking',true)
@@ -76,7 +104,7 @@ var{ytdlpDownload,ytdlpDownloadToS3} = require('./utils/ytdlp')
 //downloadFile('https://img-9gag-fun.9cache.com/photo/anzL5dE_460sv.mp4','tester.mp4')
 
 
-ytdlpDownloadToS3('https://www.tiktok.com/@_funny.official/video/7339934958099680544','/videos/video.mp4')
+//ytdlpDownloadToS3('https://www.tiktok.com/@_funny.official/video/7339934958099680544','/videos/video.mp4')
 //ytdlpDownload('https://www.tiktok.com/@_funny.official/video/7339934958099680544','video.mp4')
 
 //okidoke
@@ -91,7 +119,7 @@ const videoFilePath = path.join(__dirname, 'funny_videos', 'video.mp4');
 
 
 //
-get_feed_file_test("https://rss.app/feeds/t69AwBE6btGFUAM1.xml","ttTest2.json")
+//get_feed_file_test("https://rss.app/feeds/t69AwBE6btGFUAM1.xml","ttTest2.json")
 
 
 //ttSource("https://rss.app/feeds/5fdisHCWLdpg5QLf.xml",'funny')
