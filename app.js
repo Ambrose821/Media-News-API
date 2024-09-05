@@ -38,9 +38,15 @@ setInterval(source,1000*60*60*24);
 
 
 //Mediaprocess testing
-var {photoAddGradientAndText,photoToVideoPostToS3,videoToVideoPost,downloadFile,fixRedditUrl}= require('./utils/mediaProcessor')
+var {photoAddGradientAndText,photoToVideoPostToS3,videoToVideoPost,downloadFile,fixRedditUrl}= require('./utils/mediaProcessor');
 
 
+//gemini ai methods
+var {generate_text_and_headline_short,generate_double_caption} = require('./utils/googleGeminiClient');
+
+
+//generate_text_and_headline_short(" Trump mocks Democrats, insults Pelosi, in first campaign rally since assassination attempt  Reuters.com Trump leans into divisive rhetoric in first rally since assassination attempt  NBC NewsTook a bullet for democracy’: Donald Trump at first rally after assassination attempt  Hindustan Times'No sign this award exists': Daniel Dale fact checks Trump's 'Man of the Year' claim  CNN Trump’s Michigan rally line stretched over 1.5 miles, but didn’t discourage his faithful  MLive.com");
+//generate_double_caption(" Trump mocks Democrats, insults Pelosi, in first campaign rally since assassination attempt  Reuters.com Trump leans into divisive rhetoric in first rally since assassination attempt  NBC NewsTook a bullet for democracy’: Donald Trump at first rally after assassination attempt  Hindustan Times'No sign this award exists': Daniel Dale fact checks Trump's 'Man of the Year' claim  CNN Trump’s Michigan rally line stretched over 1.5 miles, but didn’t discourage his faithful  MLive.com")
 
 
 //downloadFile('https://v.redd.it/m98rudox5cxc1/DASH_720.mp4?source=fallback','11')
