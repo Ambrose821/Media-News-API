@@ -13,6 +13,7 @@ var usersRouter = require('./routes/users');
 
 //Models
 const Media = require('./models/Media')
+const Post = require('./models/Post')
 const pLimit = require('p-limit')
 
 //Load config file
@@ -82,19 +83,19 @@ var {generate_text_and_headline_short,generate_double_caption} = require('./util
 // photoToVideoPostToS3('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",'88','text','Breaking',true)
 // try{
 
-//   const process_limit = pLimit(5);
+  // const process_limit = pLimit(5);
 
-//   const ffmpeg_tasks = Array.from({length: 25},(_,i)=>{
-//     return(process_limit(()=>{
-//       const identifier = i+1
-//       return photoToVideoPostToS3('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",String(identifier),'text','Breaking',true)
-//     }))
-//   })
-//   Promise.all(ffmpeg_tasks).then(results =>{
-//     console.log('photo to videos done')
-//     console.log(results)
-//   })
-//   .catch(err =>{console.error("Error in rate limted ffmpeg taskL: ",err)})
+  // const ffmpeg_tasks = Array.from({length: 25},(_,i)=>{
+  //   return(process_limit(()=>{
+  //     const identifier = i+1
+  //     return photoToVideoPostToS3('http://www.yardbarker.com/media/e/1/e157a33aef78f1d2f9d8108d13d5d24d59cac348/thumb_16x9/USATSI_23326796_168404824_lowres-1024x683.jpg',"Horschel shines in rain to lead Open after brutal third round",String(identifier),'text','Breaking',true)
+  //   }))
+  // })
+  // Promise.all(ffmpeg_tasks).then(results =>{
+  //   console.log('photo to videos done')
+  //   console.log(results)
+  // })
+  // .catch(err =>{console.error("Error in rate limted ffmpeg taskL: ",err)})
 // //try limiting the number of concurrent ffmpeg processes running this code for railway deployment  
 // // for(var i =10; i <25; i++){
 // //  //  videoToVideoPost('https://img-9gag-fun.9cache.com/photo/anzL5dE_460sv.mp4',"xxxxxxxxxxxxxxxxorschel shines in rain to lead Open after brutal third round",String(i),'TEXT','Crazy')

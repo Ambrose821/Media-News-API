@@ -42,7 +42,7 @@ const uploadFilesToS3 = async(filePath) =>{
         console.error("Error uploading file to S3: " +err)
     }
 }
-const uploadReadableBufferToS3 = async (readableBuffer,identifier,contentType) =>{
+const uploadReadableBufferToS3 = async (readableBuffer,identifier,contentType,genre = "default") =>{
     try{
      
         const pass = new PassThrough()
